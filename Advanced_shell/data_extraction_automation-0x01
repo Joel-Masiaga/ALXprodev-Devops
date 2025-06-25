@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Parse the JSON using jq
+NAME=$(jq -r '.name' data.json | sed 's/.*/\u&/') # Capitalize
+HEIGHT=$(jq -r '.height' data.json)
+WEIGHT=$(jq -r '.weight' data.json)
+TYPE=$(jq -r '.types[0].type.name' data.json | sed 's/.*/\u&/') # Capitalize
+
+# Convert height and weight to metric units
+HEIGHT_METERS=$(awk "BEGIN {print $HEIGHT / 10}")
+WEIGHT_KG=$(awk "BEGIN {print $WEIGHT / 10}")
+
+echo "$NAME is of type $TYPE, weighs ${WEIGHT_KG}kg, and is ${HEIGHT_METERS}m tall."
