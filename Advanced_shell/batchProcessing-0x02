@@ -1,0 +1,20 @@
+#!/bin/bash
+
+POKEMONS=("bulbasaur" "ivysaur" "venusaur" "charmander" "charmeleon")
+DATA_DIR="pokemon_data"
+mkdir -p "$DATA_DIR"
+
+for POKEMON in "${POKEMONS[@]}"
+do
+  echo "Fetching data for $POKEMON..."
+  RESPONSE=$(curl -s --fail "https://pokeapi.co/api/v2/pokemon/${POKEMON}")
+
+  if [ $? -eq 0 ]; then
+    echo "$RESPONSE" > "$DATA_DIR/${POKEMON}.json"
+    echo "Saved data to $DATA_DIR/${POKEMON}.json"
+  else
+    echo "Error fetching $POKEMON" >> "$DATA_DIR/errors.txt"
+  fi
+
+  sleep 1
+done
