@@ -3,19 +3,31 @@
 POKEMONS=("bulbasaur" "ivysaur" "venusaur" "charmander" "charmeleon")
 DATA_DIR="pokemon_data"
 mkdir -p "$DATA_DIR"
+ERROR_FILE="$DATA_DIR/errors.txt"
+
+> "$ERROR_FILE"
 
 fetch_pokemon() {
   local POKEMON=$1
   echo "Fetching $POKEMON in background..."
   curl -s --fail "https://pokeapi.co/api/v2/pokemon/${POKEMON}" -o "$DATA_DIR/${POKEMON}.json" \
     && echo "Saved data to $DATA_DIR/${POKEMON}.json" \
-    || echo "Failed to fetch $POKEMON" >> "$DATA_DIR/errors.txt"
+    || echo "Failed to fetch $POKEMON" >> "$ERROR_FILE"
 }
-
 for POKEMON in "${POKEMONS[@]}"
 do
   fetch_pokemon "$POKEMON" &
 done
 
-wait
+echo "Waiting for all background jobs to finish..."
+jobs
+
+for job in $(jobs -p); do
+  wait "$job" || {
+    echo "A background job failed. Killing all others..."
+    kill $(jobs -p) 2>/dev/null
+    break
+  }
+done
+
 echo "All fetch operations completed."
